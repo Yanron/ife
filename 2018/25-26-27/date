@@ -1,0 +1,59 @@
+  let year, month, day, hour, minite, second, result;
+    let Y, M, D, h, m, s, W;//年月日时分秒周
+    year = document.getElementById('year-select');
+    month = document.getElementById('month-select');
+    day = document.getElementById('day-select');
+    hour = document.getElementById('hour-select');
+    minite = document.getElementById('minite-select');
+    second = document.getElementById('second-select');
+    result = document.getElementById('result-wrapper');
+
+    function createOption(type, start, end) {
+        let opt;
+        for (let i = start; i <= end; i++) {
+            opt = document.createElement('option');
+            opt.value = i;
+            console.log(type);
+            if (type == 'hour' && i < 10) {
+                opt.innerText = '0' + i;
+            } else {
+                opt.innerText = i;
+            }
+            type.appendChild(opt);
+        }
+    }
+    let days = [0, 31, 30, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let weekday = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    function getDays(y, m) {
+        if ((y % 4 == 0 && y % 100 != 0 || 4 % 400 == 0) && m == 2)return 28;
+        return days[m];
+    }
+    createOption(year, 1900, 2100);
+    createOption(month, 1, 12);
+    createOption(day, 1, getDays(year.value, month.value));
+    createOption(hour, 0, 24);
+    createOption(minite, 0, 59);
+    createOption(second, 0, 59);
+    function dist(){
+        let today = new Date(),d=new Date();
+        d.setFullYear(year,month-1,day);
+        d.set(hour,minite,second);
+        let str=today>d?'已经过去':'还有';
+        let dis=Math.abs(today-d);
+        let dayDis=Math.floor(dis/(24*60*60*1000)),
+                hourDis=Math.floor(dis/(60*60*1000))%24,
+                minDis=Math.floor(dis/(60000))%60,
+                secDis=Math.floor(dis/(1000))%60
+        Y =today.getFullYear();
+        M = today.getMonth() + 1;
+        D = today.getDay();
+        m = today.getMinutes();
+        h = today.getHours();
+        s = today.getSeconds();
+        W = today.getDay();
+        setTimeout(function () {
+            dist();
+            result.innerText = `现在距离${year}年${month}月${day}日 ${weekday[W]} ${hour}:${minite}:${second} ${str} ${dayDis}天${hourDis}小时${minDis}分${secDis}秒`;
+        },500)
+
+    }
