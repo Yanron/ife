@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        ul{
+            list-style: none;
+            padding:0px;
+            margin:0px;
+        }
+        .wrapper{position:relative}
+        #email-sug-wrapper{
+            border:1px solid #a9a9a9;
+            color:#a9a9a9;
+            position:absolute;
+            width:168px;
+            top:25px;
+            border-top:0px;
+            overflow: hidden;
+        }
+        #email-sug-wrapper li{ padding:8px;width:100% }
+        #email-sug-wrapper li:hover{
+            cursor:pointer;
+            background: rgb(27, 55, 105);
+        }
+        #email-input{width:150px;padding:3px 8px}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <input id="email-input" type="text">
+    <ul id="email-sug-wrapper" class="email-sug"></ul>
+</div>
+<script>
+    /*IFE上给的代码，没太弄明白编码解码*/
+    var HtmlUtil = {
+        /*1.用浏览器内部转换器实现html转码*/
+        htmlEncode:function (html){
+            //1.首先动态创建一个容器标签元素，如DIV
+            var temp = document.createElement ("div");
+            //2.然后将要转换的字符串设置为这个元素的innerText(ie支持)或者textContent(火狐，google支持)
+            (temp.textContent != undefined ) ? (temp.textContent = html) : (temp.innerText = html);
+            //3.最后返回这个元素的innerHTML，即得到经过HTML编码转换的字符串了
+            var output = temp.innerHTML;
+            temp = null;
+            return output;
+        },
+        /*2.用浏览器内部转换器实现html解码*/
+        htmlDecode:function (text){
+            //1.首先动态创建一个容器标签元素，如DIV
+            var temp = document.createElement("div");
+            //2.然后将要转换的字符串设置为这个元素的innerHTML(ie，火狐，google都支持)
+            temp.innerHTML = text;
+            //3.最后返回这个元素的innerText(ie支持)或者textContent(火狐，google支持)，即得到经过HTML解码的字符串了。
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+        /*3.用正则表达式实现html转码*/
+        htmlEncodeByRegExp:function (str){
+            var s = "";
+            if(str.length == 0) return "";
+            s = str.replace(/&/g,"&");
+            s = s.replace(/</g,"<");
+            s = s.replace(/>/g,">");
+            s = s.replace(/ /g," ");
+            s = s.replace(/\'/g,"'");
+            s = s.replace(/\"/g,'"');
+            return s;
+        },
+        /*4.用正则表达式实现html解码*/
+        htmlDecodeByRegExp:function (str){
+            var s = "";
+            if(str.length == 0) return "";
+            s = str.replace(/&/g,"&");
+            s = s.replace(/</g,"<");
+            s = s.replace(/>/g,">");
+            s = s.replace(/ /g," ");
+            s = s.replace(/'/g,"\'");
+            s = s.replace(/"/g,"\"");
+            return s;
+        }
+    };
+</script>
+<script>
+    let ul=document.getElementById('email-sug-wrapper'),
+            email=document.getElementById('email-input'),
+            idx;
+    var postfixList = ['163.com', 'gmail.com', '126.com', 'qq.com', '263.net'];
+    ul.style.display="none";
+    email.focus();
+    function hint(){//inputDom
+        let name=email.value.trim(),str='';
+        ul.innerHTML='';
+        if(name){
+            let end=name.indexOf('@'),front=HtmlUtil.htmlEncode(name),back;
+            console.log(front)
+            if(end!=-1){
+                front=name.slice(0,end);
+                back=name.slice(end+1);
+            }
+            postfixList.forEach(function(value){
+                let match=strMatch(back,value);
+                if(match)str+=`<li>${front}@${value}</li>`
+            })
+            ul.innerHTML=str;
+            ul.childNodes[0].style.background='#2ee440';idx=0;
+            ul.style.display="block";
+        }else{
+            ul.style.display="none";
+        }
+    }
+    ul.addEventListener('click',function(e){
+        if(e.target&& e.target.nodeName=='LI'){
+            let choose= e.target.innerText;
+            email.value=choose;
+            ul.style.display="none";
+            email.focus();
+        }
+    })
+    function strMatch(str1,str2){
+        if(str2.match(str1))return true;
+        return false;
+    }
+    let keyEvent=function(e){
+        /*刚开始li没有创建会报错，但keypress都不会被我键盘上下键触发？？*/
+        let li=ul.childNodes,len=li.length;
+        li[idx].style.background="none";
+        if(e.keyCode==38){//上
+            idx=(idx-1+len)%len;
+        }else if(e.keyCode==40){//下
+            idx=(idx+1)%len;
+        }else if(e.keyCode==13){//enter
+            email.value=li[idx].innerText;
+            ul.style.display="none";
+            email.focus();
+        }else if(e.keyCode==27){email.select()}
+        else{
+            idx=0;
+        }
+        li[idx].style.background='#2ee440';
+    }
+    //失去焦点才能触发
+    //email.addEventListener('change',hint)
+    email.addEventListener('input',hint);//ie有一个onpropertychange
+    email.addEventListener('keydown',keyEvent)
+</script>
+</body>
+</html>
