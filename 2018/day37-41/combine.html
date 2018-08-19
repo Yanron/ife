@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+        *{margin:0;padding:0}
+        body{background: #f5f5f5}
+        ul{list-style: none;}
+        select{padding:3px 5px;font-size: 14px;}
+        .filter{
+            width:750px;
+            padding-top:40px;
+            margin:0 auto;
+        }
+        .filter>*{display:inline-block;margin:10px}
+        .wrapper{
+            color:#333;
+            background:black;
+            height:150px;
+        }
+        #region-radio-wrapper,#product-radio-wrapper{
+            color:#eee;
+        }
+        .item input{margin:5px}
+        /*表格部分*/
+        .layer{
+            width:90%;
+            margin:0 auto;
+            border:1px solid #a9a9a9;
+            border-radius: 5px;
+            margin-top: -50px;
+            text-align: left;
+            background: white;
+            padding:30px 0;
+        }
+        .show{margin:0 auto;}
+        .show th,.show td{padding:8px}
+        tr:hover {cursor: pointer}
+        td:hover .editor{
+            display: block;}
+        tr input{display:none;}
+        .editor,.commit,.cancel{display:none;font-size: 12px;color:cornflowerblue}
+        .editor:hover,.commit:hover,.cancel:hover{cursor:pointer}
+        td.active:hover .editor{display:none}
+        .active .commit,.active .cancel,.active input{display:block}
+        .num{width:50px}
+        /*图表部分*/
+        #graph{margin:0 auto;padding-top: 20px;padding-bottom: 50px}
+        #canvas,#bar{
+            position:relative;
+            display: inline-block;
+        }
+        #canvas .text{position:absolute}
+        .line{position:absolute;left:0}
+        .perBar{
+            background:cornflowerblue;
+            width:80%;
+            margin:0 auto;
+            position:relative;
+            bottom:1px;/*不然坐标轴会被盖住！！*/
+        }
+        .item{display:inline-block;text-align: center;}
+        .item .text{
+            font-size: 12px;
+            top:-15px;
+        }
+        .component_component_bar{
+            position:relative;
+            border-bottom:1px solid black;
+            border-left:1px solid black;
+        }
+        .component_component_bar:before,.component_component_bar:after{
+            content:' ';
+            display: block;
+            position:absolute;
+            width: 0;
+            height:0;
+        }
+        .component_component_bar:before{
+            border-left:5px solid transparent;
+            border-right:5px solid transparent;
+            border-bottom: 10px solid black;
+            left:-5px;
+            top:0px;
+        }
+        .component_component_bar:after{
+            border-top:5px solid transparent;
+            border-bottom:5px solid transparent;
+            border-left: 10px solid #000;
+            right:-1px;
+            bottom:-5px;
+        }
+        .sale{height:20px}
+        .commit{margin-right: 5px}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="filter">
+        <select id="month-select">
+            <option value="1">1月</option>
+            <option value="2">2月</option>
+            <option value="3">3月</option>
+            <option value="4">4月</option>
+            <option value="5">5月</option>
+            <option value="6">6月</option>
+            <option value="7">7月</option>
+            <option value="8">8月</option>
+            <option value="9">9月</option>
+            <option value="10">10月</option>
+            <option value="11">11月</option>
+            <option value="12">12月</option>
+        </select>
+        <div id="region-radio-wrapper">
+            地区：
+            <div class="item"></div>
+        </div>
+        <div id="product-radio-wrapper">
+            产品：
+            <div class="item"></div>
+        </div>
+    </div>
+</div>
+<main>
+    <div class="layer">
+        <section id="graph">
+            <div id="canvas"></div>
+            <div id="bar"></div>
+        </section>
+        <table class="show" border="1" cellspacing="0">
+            <thead>
+            <tr>
+                <th>商品</th>
+                <th>地区</th>
+                <th>1月</th>
+                <th>2月</th>
+                <th>3月</th>
+                <th>4月</th>
+                <th>5月</th>
+                <th>6月</th>
+                <th>7月</th>
+                <th>8月</th>
+                <th>9月</th>
+                <th>10月</th>
+                <th>11月</th>
+                <th>12月</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<script src="./js/ife31data.js"></script>
+<script src="./js/ComponentBase.js"></script>
+<script src="./js/polyline.js"></script>
+<script src="./js/bar.js"></script>
+
+<script type="text/javascript">
+    /*判断本地是否有缓存*/
+    let localData;
+    if(window.localStorage.localData){
+        localData=JSON.parse(window.localStorage.localData)
+    }else{
+        localData=sourceData;
+        window.localStorage.localData=JSON.stringify(sourceData);
+    }
+/*表单*/
+    let regionData = ["全选", "华东", "华南", "华北"],
+            productData = ["全选", "手机", "笔记本", "智能音箱"],
+            regionWrapper = document.querySelector('#region-radio-wrapper .item'),
+            productWrapper = document.querySelector('#product-radio-wrapper .item'),
+            regionResult = [], productResult = [];
+    function createCheckBox(wrapper, data) {
+        let str = '';
+        for (let i in data) {
+            str += `<input type="checkbox" value="${data[i]}">${data[i]}</input>`;
+        }
+        wrapper.innerHTML = str;
+        let check = wrapper.children;
+        check[1].checked = true;
+        wrapper.onclick = function (e) {
+            if (e.target && e.target.type == 'checkbox') {
+                //全选&反选;取消全选还要默认选择一个？？
+                if (e.target.value == "全选") {
+                    for (let i = 1; i < check.length; i++)check[i].checked = e.target.checked;
+                    if (!e.target.checked)check[1].checked = true;
+                } else {
+                    if (e.target.checked == true && wrapper.querySelectorAll('input:checked').length == data.length - 1) {
+                        check[0].checked = true;
+                    } else if (e.target.checked == false) {
+                        check[0].checked = false;
+                        wrapper.querySelectorAll('input:checked').length ? '' : e.target.checked = true;
+                    }
+                }
+                //更新数据
+                localData = processData(sourceData);
+                window.localStorage.localData = JSON.stringify(localData);
+                renderForm(localData);
+                bar_cfg.data = cfg.data = localData;
+                //    重新渲染图表
+                updateGraph();
+            }
+        }
+    }
+    createCheckBox(regionWrapper, regionData);
+    createCheckBox(productWrapper, productData);
+    /*图表展示*/
+    var cfg={
+        type:'polyline',
+        width:350,
+        height:400,
+        data:[/*{product: "手机",
+            region: "华东",
+            sale: [120, 100, 140, 160, 180, 185, 190, 210, 230, 245, 255, 270]}*/],
+        css:{
+            height:'400px',
+            width:'350px',
+            opacity:1,
+            top:0,
+        },
+        color:["#ff8878","#ffbb78","#4d8e9e","#5abf74","#a63627","#a66627","#7fbfce","#ffbdb5","#86df9e"]
+    }
+    var bar_cfg={
+        type:'bar',
+        width:350,
+        height:400,
+        data:[/*{product: "手机",
+            region: "华东",
+            sale: [120, 100, 140, 160, 180, 185, 190, 210, 230, 245, 255, 270]}*/],
+        css:{
+            height:'400px',
+            width:'350px',
+            opacity:1,
+            top:0,
+        }
+    }
+    let canvas=document.getElementById('canvas');
+    let canvas2=document.getElementById('bar')
+    let graph=document.getElementById('graph');
+    graph.style.width=`${cfg.width+bar_cfg.width+30}px`
+    canvas2.style.cssText=`position:absolute; margin-left:30px;`
+
+
+</script>
+<script src="./js/table.js"></script>
+<script src="./js/common.js"></script>
+<script>
+    localData = processData(sourceData);
+    bar_cfg.data = cfg.data = localData;
+    updateGraph();
+    renderForm(localData);
+</script>
+</body>
+</html>
