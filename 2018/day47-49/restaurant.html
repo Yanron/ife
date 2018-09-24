@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{margin:0;border:0}
+        .clearfix:after{
+            content:' ';
+            height:0;
+            clear:both;
+            display: block;
+        }
+        main{margin-top: 30px;}
+        .top-bar{
+            background: #eee;
+            border-bottom: 1px solid cornflowerblue;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            padding:10px;
+        }
+        .content *{display:inline-block;text-align: center}
+        .content{width:300px;margin:0 auto}
+        #run{
+            padding:3px 8px;
+            background: #ffd766;
+            border-radius: 4px;
+            position:absolute;
+            right:30px;
+            top:8px;
+        }
+        #run:hover{cursor:pointer}
+        section{
+            width: 21%;
+            float:left;
+            padding:15px 5px;
+            margin-left:2%;
+            margin-right:2%;
+            margin-top: 30px;;
+            border:1px dashed cornflowerblue;
+            border-radius: 3px;
+            box-sizing:border-box;
+        }
+        section img{width:100%}
+        .cook{background: orange}
+        .waiter img{width:70%;display:block;margin:0 auto;}
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <div class="content">
+        <span>Currency:</span>
+        <span id="currency">100</span>
+    </div>
+    <div id="run">run</div>
+</div>
+<main class="clearfix">
+    <section class="cook">
+        <div>
+            <img src="./cook.jpg" alt="cook">
+        </div>
+        <div class="status">
+            <p>cooking salad remaining 30s</p>
+        </div>
+        <ul class="waiting-list">
+        </ul>
+    </section>
+    <section class="waiter">
+        <div>
+            <img src="./waiter.jpg" alt="waiter">
+        </div>
+        <div class="status">
+            <p>waiting cook</p>
+        </div>
+    </section>
+    <section class="customer">
+        <div>
+            <img src="./customer.jpg" alt="customer">
+        </div>
+        <div class="status">
+            <p>cooking salad remaining 30s</p>
+        </div>
+        <ul class="order-list">
+
+        </ul>
+    </section>
+    <section>
+        <h4>排队顾客</h4>
+        <ul class="waiting">
+
+        </ul>
+    </section>
+</main>
+</body>
+<script src="main.js"></script>
+</html>
